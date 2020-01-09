@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Meys Joris" />
+
+<meta name="date" content="2019-12-20" />
+
+<title>S4 class structure of the xnet package</title>
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">S4 class structure of the xnet package</h1>
+<h4 class="author">Meys Joris</h4>
+<h4 class="date">2019-12-20</h4>
+
+
+
+<p>This document describes the S4 class structure used in the <code>xnet</code> package. It’s mainly a reference for package developers. Users are advised to use the appropriate functions for extracting the information they need.</p>
+<div id="virtual-classes" class="section level2">
+<h2>Virtual classes</h2>
+<p>The <code>xnet</code> package has three virtual classes that each define a number of slots necessary for that specific type of model:</p>
+<ol style="list-style-type: decimal">
+<li>the class <code>tskrr</code> for general two step kernel ridge regressions</li>
+<li>the class <code>tskrrTune</code> for tuned two step kernel ridge regressions</li>
+<li>the class <code>tskrrImpute</code> for two step kernel ridge regressions with imputed data.</li>
+</ol>
+<p>Each of these classes defines the necessary slots for that specific type of action. The actual classes returned by the functions <code>tskrr()</code>, <code>tune()</code> and <code>impute()</code> inherit from (a combination of) these virtual classes.</p>
+</div>
+<div id="actual-classes" class="section level2">
+<h2>Actual classes</h2>
+<div id="inheritance-from-tskrr" class="section level3">
+<h3>Inheritance from tskrr</h3>
+<p>After using the function <code>tskrr()</code>, one of the following classes is returned:</p>
+<ul>
+<li><code>tskrrHomogeneous</code> : for homogeneous networks</li>
+<li><code>tskrrHeterogeneous</code> : for heterogeneous networks</li>
+</ul>
+<p>These classes have similar slots, but the homogeneous models don’t need information on the column kernel matrix. The slots are listed below. In general the following design principles hold:</p>
+<ul>
+<li>the slot <code>y</code> contains the adjacency matrix used to fit the model. This goes for all different classes, including the <code>tskrrTune</code> and <code>tskrrImpute</code> classes.</li>
+<li>the object stores the eigendecompositions of the row kernel K and -if applicable- the column kernel G.</li>
+<li>if <code>has.hat = TRUE</code>, the hat matrices Hk and possibly Hg are stored in the object as well. This can speed up calculations but comes at a memory cost.</li>
+<li>the slot <code>pred</code> holds the predicted values.</li>
+<li>the slots <code>lambda.k</code> and <code>lambda.g</code> store the tuning parameters.</li>
+<li>the slot <code>labels</code> store the labels attached to the rows and the columns in a list with elements <code>k</code> and <code>g</code>. If no labels were present, the single element <code>k</code> will have one <code>NA</code> value. The function <code>labels()</code> will still construct default labels when required.</li>
+</ul>
+</div>
+<div id="slots-defined-by-tskrrhomogeneous" class="section level3">
+<h3>Slots defined by tskrrHomogeneous</h3>
+<ul>
+<li><code>symmetry</code> : object of type <strong>character</strong></li>
+<li><code>y</code> : object of type <strong>matrix</strong></li>
+<li><code>k</code> : object of type <strong>eigen</strong></li>
+<li><code>lambda.k</code> : object of type <strong>numeric</strong></li>
+<li><code>pred</code> : object of type <strong>matrix</strong></li>
+<li><code>has.hat</code> : object of type <strong>logical</strong></li>
+<li><code>Hk</code> : object of type <strong>matrix</strong></li>
+<li><code>labels</code> : object of type <strong>list</strong></li>
+</ul>
+</div>
+<div id="slots-defined-by-tskrrheterogeneous" class="section level3">
+<h3>Slots defined by tskrrHeterogeneous</h3>
+<ul>
+<li><code>g</code> : object of type <strong>eigen</strong></li>
+<li><code>lambda.g</code> : object of type <strong>numeric</strong></li>
+<li><code>Hg</code> : object of type <strong>matrix</strong></li>
+<li><code>y</code> : object of type <strong>matrix</strong></li>
+<li><code>k</code> : object of type <strong>eigen</strong></li>
+<li><code>lambda.k</code> : object of type <strong>numeric</strong></li>
+<li><code>pred</code> : object of type <strong>matrix</strong></li>
+<li><code>has.hat</code> : object of type <strong>logical</strong></li>
+<li><code>Hk</code> : object of type <strong>matrix</strong></li>
+<li><code>labels</code> : object of type <strong>list</strong></li>
+</ul>
+<p>Both classes inherit directly from the class <code>tskrr</code>. But these classes also function as parent classes from which <code>tune()</code> related and <code>impute()</code> related classes inherit.</p>
+</div>
+<div id="inheritance-from-tskrrtune" class="section level3">
+<h3>Inheritance from tskrrTune</h3>
+<p>When using the function <code>tune()</code>, you get one of the following classes:</p>
+<ul>
+<li><code>tskrrTuneHomogeneous</code> : for tuned homogeneous networks. Inherits also from <code>tskrrHomogeneous</code>.</li>
+<li><code>tskrrTuneHeterogeneous</code> : for tuned heterogeneous networks. Inherits also from <code>tskrrHeterogeneous</code>.</li>
+</ul>
+<p>Apart from the slots of the respective <code>tskrr</code> class, the inheritance from <code>tskrrTune</code> adds the following slots:</p>
+<ul>
+<li><code>lambda_grid</code> : object of type <strong>list</strong></li>
+<li><code>best_loss</code> : object of type <strong>numeric</strong></li>
+<li><code>loss_values</code> : object of type <strong>matrix</strong></li>
+<li><code>loss_function</code> : object of type <strong>function</strong></li>
+<li><code>exclusion</code> : object of type <strong>character</strong></li>
+<li><code>replaceby0</code> : object of type <strong>logical</strong></li>
+<li><code>onedim</code> : object of type <strong>logical</strong></li>
+</ul>
+<p>These slots use the following design principles:</p>
+<ul>
+<li><code>lambda_grid</code> is a list with one or two elements named <code>k</code> and <code>g</code>, similar to the <code>labels</code> slot of the <code>tskrr</code> classes. These elements contain the lambda values tested for that dimension. If the grid search was one-dimensional (and <code>onedim</code> contains <code>TRUE</code>), there’s only one element called <code>k</code>.</li>
+<li><code>loss_values</code> is always a matrix, but when <code>onedim = TRUE</code> it’s a matrix with a single column. In that matrix, the values are arranged in such a way that the rows correspond with the lambdas for the row kernel, and the columns with the lambdas for the column kernel.</li>
+<li>The slots <code>exclusion</code> and <code>replaceby0</code> follow the same rules as the arguments of the function <code>get_loo_fun()</code>.</li>
+</ul>
+</div>
+<div id="inheritance-from-tskrrimpute" class="section level3">
+<h3>Inheritance from tskrrImpute</h3>
+<p>When using the function <code>impute()</code>, you get one of the following classes:</p>
+<ul>
+<li><code>tskrrImputeHomogeneous</code> : for homogeneous networks with imputed data.</li>
+<li><code>tskrrImputeHeterogeneous</code> : for heterogeneous networks with imputed data.</li>
+</ul>
+<p>Apart from the slots of the respective <code>tskrr</code> class, the inheritance from <code>tskrrImpute</code> adds the following slots:</p>
+<ul>
+<li><code>imputeid</code> : object of type <strong>integer</strong></li>
+<li><code>niter</code> : object of type <strong>integer</strong></li>
+<li><code>tol</code> : object of type <strong>numeric</strong></li>
+</ul>
+<p>The slot <code>imputeid</code> treats the Y matrix as a vector and stores the position of the imputed values as a integer vector. The other two slots just store the settings used during imputation.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

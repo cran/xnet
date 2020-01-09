@@ -1,0 +1,135 @@
+---
+title: "S4 class structure of the xnet package"
+author: "Meys Joris"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{xnet Class structure}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(xnet)
+
+slotsToRmd <- function(class){
+  slots <- getSlots(class)
+  
+  txt <- paste0(" * `",names(slots), "` : object of type **", slots, "**")
+  cat(txt, sep = "\n")
+}
+```
+
+This document describes the S4 class structure used in the `xnet` package.
+It's mainly a reference for package developers. Users are advised to 
+use the appropriate functions for extracting the information they need.
+
+## Virtual classes
+
+The `xnet` package has three virtual classes that each define a 
+number of slots necessary for that specific type of model:
+
+ 1. the class `tskrr` for general two step kernel ridge regressions
+ 2. the class `tskrrTune` for tuned two step kernel ridge regressions
+ 3. the class `tskrrImpute` for two step kernel ridge regressions with
+ imputed data.
+ 
+Each of these classes defines the necessary slots for that specific 
+type of action. The actual classes returned by the functions `tskrr()`,
+`tune()` and `impute()` inherit from (a combination of) these virtual
+classes.
+
+## Actual classes
+
+### Inheritance from tskrr
+
+After using the function `tskrr()`, one of the following classes is
+returned:
+
+  * `tskrrHomogeneous` : for homogeneous networks
+  * `tskrrHeterogeneous` : for heterogeneous networks
+     
+These classes have similar slots, but the homogeneous models don't need
+information on the column kernel matrix. The slots are listed below. In
+general the following design principles hold:
+
+ * the slot `y` contains the adjacency matrix used to fit the model. This
+ goes for all different classes, including the `tskrrTune` and `tskrrImpute` classes. 
+ * the object stores the eigendecompositions of the row kernel K and
+ -if applicable- the column kernel G. 
+ * if `has.hat = TRUE`, the hat matrices Hk and possibly Hg are stored
+ in the object as well. This can speed up calculations but comes at
+ a memory cost.
+ * the slot `pred` holds the predicted values.
+ * the slots `lambda.k` and `lambda.g` store the tuning parameters.
+ * the slot `labels` store the labels attached to the rows and the 
+ columns in a list with elements `k` and `g`. If no labels were present,
+ the single element `k` will have one `NA` value. The function `labels()`
+ will still construct default labels when required.
+
+### Slots defined by tskrrHomogeneous
+
+```{r Create slots tskrrHomogeneous, results='asis', echo = FALSE}
+slotsToRmd("tskrrHomogeneous")
+```
+
+### Slots defined by tskrrHeterogeneous
+
+```{r Create slots tskrrHeterogeneous, results='asis', echo = FALSE}
+slotsToRmd("tskrrHeterogeneous")
+```
+
+Both classes inherit directly from the class `tskrr`. But these 
+classes also function as parent classes from which `tune()` related
+and `impute()` related classes inherit.
+
+### Inheritance from tskrrTune
+
+When using the function `tune()`, you get one of the following classes:
+
+  * `tskrrTuneHomogeneous` : for tuned homogeneous networks. Inherits also from `tskrrHomogeneous`.
+  * `tskrrTuneHeterogeneous` : for tuned heterogeneous networks. Inherits also from `tskrrHeterogeneous`.
+     
+Apart from the slots of the respective `tskrr` class, the inheritance
+from `tskrrTune` adds the following slots:
+
+```{r Create slots tskrrTune, results='asis', echo = FALSE}
+slotsToRmd("tskrrTune")
+```
+
+These slots use the following design principles:
+
+ * `lambda_grid` is a list with one or two elements named `k` and `g`,
+ similar to the `labels` slot of the `tskrr` classes. These elements
+ contain the lambda values tested for that dimension. If the grid search
+ was one-dimensional (and `onedim` contains `TRUE`), there's only one
+ element called `k`. 
+ * `loss_values` is always a matrix, but when `onedim = TRUE` it's a 
+ matrix with a single column. In that matrix, the values are arranged in
+ such a way that the rows correspond with the lambdas for the row kernel,
+ and the columns with the lambdas for the column kernel.
+ * The slots `exclusion` and `replaceby0` follow the same rules as the
+ arguments of the function `get_loo_fun()`. 
+     
+### Inheritance from tskrrImpute
+
+When using the function `impute()`, you get one of the following 
+classes:
+
+  * `tskrrImputeHomogeneous` : for homogeneous networks with imputed data.
+  * `tskrrImputeHeterogeneous` : for heterogeneous networks with imputed data.
+
+Apart from the slots of the respective `tskrr` class, the inheritance
+from `tskrrImpute` adds the following slots:
+
+```{r Create slots tskrrImpute, results='asis', echo = FALSE}
+slotsToRmd("tskrrImpute")
+```
+
+The slot `imputeid` treats the Y matrix as a vector and stores the
+position of the imputed values as a integer vector. The other two slots
+just store the settings used during imputation.
